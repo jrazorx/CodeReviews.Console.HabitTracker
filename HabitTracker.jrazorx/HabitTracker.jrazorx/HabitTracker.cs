@@ -167,12 +167,30 @@ public class HabitTracker
         {
             try
             {
-                _databaseManager.DeleteHabitType(id);
-                Console.WriteLine("Habit type deleted successfully.");
+                int habitCount = _databaseManager.GetHabitCountForHabitType(id);
+                Console.WriteLine($"Deleting this habit type will delete all {habitCount} habits with this habit type. Are you sure? (y/n)");
+                string confirmation = Console.ReadLine()?.Trim().ToLower();
+
+                if (confirmation == "y")
+                {
+                    int deletedCount = _databaseManager.DeleteHabitType(id);
+                    if (deletedCount > 0)
+                    {
+                        Console.WriteLine($"Habit type deleted successfully.\n{habitCount} associated habits have been deleted.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Habit type not found.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Deletion cancelled.");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine($"An error occurred: {ex.Message}");
             }
         }
         else

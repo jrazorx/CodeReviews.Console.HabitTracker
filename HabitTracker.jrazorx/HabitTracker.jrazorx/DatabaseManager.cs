@@ -30,7 +30,9 @@ public class DatabaseManager
                 Quantity INTEGER NOT NULL,
                 Date TEXT NOT NULL,
                 HabitTypeId INTEGER NOT NULL,
-                FOREIGN KEY (HabitTypeId) REFERENCES HabitTypes(Id)
+                FOREIGN KEY (HabitTypeId) 
+                    REFERENCES HabitTypes(Id) 
+                    ON DELETE CASCADE
             )";
             command.ExecuteNonQuery();
         }
@@ -145,22 +147,14 @@ public class DatabaseManager
         }
     }
 
-    public void DeleteHabitType(int id)
+    public int DeleteHabitType(int id)
     {
-        using (var connection = new SqliteConnection(ConnectionString))
-        {
-            connection.Open();
-            var command = connection.CreateCommand();
-            command.CommandText = @"
-            DELETE FROM HabitTypes
-            WHERE Id = $id";
-            command.Parameters.AddWithValue("$id", id);
-            int rowsAffected = command.ExecuteNonQuery();
-            if (rowsAffected == 0)
-            {
-                throw new Exception("Habit Type ID does not exist.");
-            }
-        }
+        using var connection = new SqliteConnection(ConnectionString);
+        connection.Open();
+        var command = connection.CreateCommand();
+        command.CommandText = "DELETE FROM HabitTypes WHERE Id = $id";
+        command.Parameters.AddWithValue("$id", id);
+        return command.ExecuteNonQuery();
     }
 
 
@@ -209,6 +203,18 @@ public class DatabaseManager
         }
 
         return habits;
+    }
+
+    public int GetHabitCountForHabitType(int habitTypeId)
+    {
+        using (var connection = new SqliteConnection(ConnectionString))
+        {
+            connection.Open();
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM Habits WHERE HabitTypeId = $habitTypeId";
+            command.Parameters.AddWithValue("$habitTypeId", habitTypeId);
+            return Convert.ToInt32(command.ExecuteScalar());
+        }
     }
 
     public void UpdateHabit(Habit habit)

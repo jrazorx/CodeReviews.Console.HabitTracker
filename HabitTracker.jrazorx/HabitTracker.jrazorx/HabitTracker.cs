@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 public enum MenuOption
 {
@@ -218,10 +219,11 @@ public class HabitTracker
         Console.Write("Enter the quantity of the habit: ");
         if (int.TryParse(Console.ReadLine(), out int quantity))
         {
+            DateTime date = GetValidDate("Enter the date of the habit (yyyy-MM-dd) or 't' for today's date: ");
             var habit = new Habit
             {
                 Quantity = quantity,
-                Date = DateTime.Now,
+                Date = date,
                 HabitTypeId = habitTypeId
             };
             _databaseManager.InsertHabit(habit);
@@ -264,11 +266,12 @@ public class HabitTracker
             Console.Write("Enter new quantity of the habit: ");
             if (int.TryParse(Console.ReadLine(), out int quantity))
             {
+                DateTime date = GetValidDate("Enter the new date of the habit (yyyy-MM-dd) or 't' for today's date: ");
                 var habit = new Habit
                 {
                     Id = id,
                     Quantity = quantity,
-                    Date = DateTime.Now,
+                    Date = date,
                     HabitTypeId = habitTypeId
                 };
                 try
@@ -370,5 +373,26 @@ public class HabitTracker
                 input = input.Trim().ToUpper();
         } while (string.IsNullOrEmpty(input) || input.Trim().Length == 0);
         return input;
+    }
+
+    private DateTime GetValidDate(string prompt)
+    {
+        Console.Write(prompt);
+        DateTime date;
+        while (true)
+        {
+            string input = Console.ReadLine()?.Trim().ToLower();
+
+            if (input == "t")
+            {
+                return DateTime.Today;
+            }
+
+            if (DateTime.TryParseExact(input, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
+            {
+                return date;
+            }
+            Console.Write("Invalid date format. Please use yyyy-MM-dd or 't' for today's date: ");
+        }
     }
 }
